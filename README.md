@@ -32,8 +32,8 @@ Full architectural sequence diagrams and payload schemas are located in the `doc
 
 To build and serve the docs locally using MkDocs:
 ```bash
-pip install mkdocs-material mkdocs-mermaid2-plugin
-mkdocs serve
+python -m pip install --user mkdocs-material
+python -m mkdocs serve
 ```
 
 ## Building Locally 
