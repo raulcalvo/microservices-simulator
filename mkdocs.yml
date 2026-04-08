@@ -1,0 +1,22 @@
+site_name: MicroDummy Services PoC
+theme:
+  name: material
+  features:
+    - navigation.tabs
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format ''
+
+nav:
+  - Home: index.md
+  - Flows:
+    - Flow 01 (Happy Path): flows/happy-path.md
+    - Flow 02 (Batching): flows/batching.md
+    - Flow 03 (Latency): flows/latency.md
+    - Flow 04 (Orphan Timeout): flows/orphan-timeout.md
+    - Flow 05 (Conditional Router): flows/conditional-router.md
+    - Flow 06 (Scatter-Gather): flows/scatter-gather.md
+    - Flow 07 (Data Corruption): flows/data-corruption.md

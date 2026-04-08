@@ -1,0 +1,94 @@
+version: '3.8'
+
+x-base: &base
+  build: .
+  image: micro_node:latest
+
+services:
+  # ==================================
+  # FLOW 1: Happy Path
+  # ==================================
+  f1_producer:
+    <<: *base
+    command: ["/app/micro_node", "--role", "producer", "--flow", "FLOW-01-HAPPY-PATH", "--connect1", "tcp://f1_enricher:5001"]
+  f1_enricher:
+    <<: *base
+    command: ["/app/micro_node", "--role", "enricher", "--flow", "FLOW-01-HAPPY-PATH", "--bind", "tcp://0.0.0.0:5001", "--connect1", "tcp://f1_consumer:5002"]
+  f1_consumer:
+    <<: *base
+    command: ["/app/micro_node", "--role", "consumer", "--flow", "FLOW-01-HAPPY-PATH", "--bind", "tcp://0.0.0.0:5002"]
+
+  # ==================================
+  # FLOW 2: Batching
+  # ==================================
+  f2_producer:
+    <<: *base
+    command: ["/app/micro_node", "--role", "producer", "--flow", "FLOW-02-BATCHING", "--connect1", "tcp://f2_aggregator:5003"]
+  f2_aggregator:
+    <<: *base
+    command: ["/app/micro_node", "--role", "aggregator", "--flow", "FLOW-02-BATCHING", "--bind", "tcp://0.0.0.0:5003"]
+
+  # ==================================
+  # FLOW 3: Latency (with chaos)
+  # ==================================
+  f3_producer:
+    <<: *base
+    command: ["/app/micro_node", "--role", "producer", "--flow", "FLOW-03-LATENCY", "--connect1", "tcp://f3_slow_processor:5004"]
+  f3_slow_processor:
+    <<: *base
+    command: ["/app/micro_node", "--role", "slowprocessor", "--flow", "FLOW-03-LATENCY", "--bind", "tcp://0.0.0.0:5004", "--chaos"]
+
+  # ==================================
+  # FLOW 4: Orphan Timeout (with chaos)
+  # ==================================
+  f4_producer:
+    <<: *base
+    command: ["/app/micro_node", "--role", "producer", "--flow", "FLOW-04-ORPHAN", "--connect1", "tcp://f4_worker:5005"]
+  f4_worker:
+    <<: *base
+    command: ["/app/micro_node", "--role", "worker", "--flow", "FLOW-04-ORPHAN", "--bind", "tcp://0.0.0.0:5005", "--chaos"]
+
+  # ==================================
+  # FLOW 5: Conditional Router (with chaos)
+  # ==================================
+  f5_producer:
+    <<: *base
+    command: ["/app/micro_node", "--role", "producer", "--flow", "FLOW-05-ROUTER", "--connect1", "tcp://f5_router:5006"]
+  f5_router:
+    <<: *base
+    command: ["/app/micro_node", "--role", "router", "--flow", "FLOW-05-ROUTER", "--bind", "tcp://0.0.0.0:5006", "--connect1", "tcp://f5_std:5007", "--connect2", "tcp://f5_vip:5008", "--chaos"]
+  f5_std:
+    <<: *base
+    command: ["/app/micro_node", "--role", "standard_port", "--flow", "FLOW-05-ROUTER", "--bind", "tcp://0.0.0.0:5007"]
+  f5_vip:
+    <<: *base
+    command: ["/app/micro_node", "--role", "vip_port", "--flow", "FLOW-05-ROUTER", "--bind", "tcp://0.0.0.0:5008"]
+
+  # ==================================
+  # FLOW 6: Scatter-Gather (with chaos)
+  # ==================================
+  f6_orchestrator:
+    <<: *base
+    command: ["/app/micro_node", "--role", "orchestrator", "--flow", "FLOW-06-SCATTER", "--bind", "tcp://0.0.0.0:6000", "--connect1", "tcp://f6_billing:6001", "--connect2", "tcp://f6_inventory:6002", "--chaos"]
+  f6_billing:
+    <<: *base
+    command: ["/app/micro_node", "--role", "billing", "--flow", "FLOW-06-SCATTER", "--bind", "tcp://0.0.0.0:6001"]
+  f6_inventory:
+    <<: *base
+    command: ["/app/micro_node", "--role", "inventory", "--flow", "FLOW-06-SCATTER", "--bind", "tcp://0.0.0.0:6002"]
+
+  # ==================================
+  # FLOW 7: Data Corruption (with chaos)
+  # ==================================
+  f7_producer:
+    <<: *base
+    command: ["/app/micro_node", "--role", "producer", "--flow", "FLOW-07-CORRUPTION", "--connect1", "tcp://f7_node1:7001"]
+  f7_node1:
+    <<: *base
+    command: ["/app/micro_node", "--role", "node1", "--flow", "FLOW-07-CORRUPTION", "--bind", "tcp://0.0.0.0:7001", "--connect1", "tcp://f7_node2:7002"]
+  f7_node2:
+    <<: *base
+    command: ["/app/micro_node", "--role", "node2", "--flow", "FLOW-07-CORRUPTION", "--bind", "tcp://0.0.0.0:7002", "--connect1", "tcp://f7_node3:7003", "--chaos"]
+  f7_node3:
+    <<: *base
+    command: ["/app/micro_node", "--role", "node3", "--flow", "FLOW-07-CORRUPTION", "--bind", "tcp://0.0.0.0:7003"]

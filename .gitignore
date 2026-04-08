@@ -1,0 +1,27 @@
+# CMake / Build
+build/
+out/
+bin/
+cmake-build-*/
+.cache/
+
+# User-specific / IDEs
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# vcpkg
+vcpkg_installed/
+.vcpkg/
+
+# Python / MkDocs
+site/
+__pycache__/
+*.pyc
+
+# OS generated files
+.DS_Store
+Thumbs.db
